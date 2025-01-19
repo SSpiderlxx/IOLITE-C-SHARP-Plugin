@@ -3,26 +3,16 @@
 //Iolite api
 const struct io_api_manager_i* io_api_manager = 0;
 
+// Declare the io_logging interface
+static const io_logging_i* io_logging = nullptr;
+
+// Interfaces
+static io_user_task_i io_user_task = {};
+
 IO_API_EXPORT io_uint32_t IO_API_CALL get_api_version()
 {
     // Inform IOLITE which version of the API you are using
     return IO_API_VERSION;
-}
-
-IO_API_EXPORT io_int32_t IO_API_CALL load_plugin(void* api_manager)
-{
-    // Ensure we can keep accessing the API manager after loading the plugin
-    io_api_manager = (const struct io_api_manager_i*)api_manager;
-
-    // Do something with the API manager, set up your plugin, etc.
-
-    return 0; // Return a value < 0 to indicate that the loading of your plugin
-    // has failed (depedency not available, etc.)
-}
-
-IO_API_EXPORT void IO_API_CALL unload_plugin()
-{
-    // Clean up here
 }
 
 
@@ -64,7 +54,7 @@ bool load_hostfxr() {
     // Load nethost and get hostfxr path
     int rc = get_hostfxr_path(buffer, &buffer_size, nullptr);
     if (rc != 0) {
-        std::cerr << "Failed to locate hostfxr" << std::endl;
+        io_logging->log_error("Failed to locate hostfxr");
         return false;
     }
 
@@ -83,7 +73,7 @@ load_assembly_and_get_function_pointer_fn get_dotnet_load_assembly(const char_t*
     hostfxr_handle cxt = nullptr;
     int rc = init_fptr(config_path, nullptr, &cxt);
     if (rc != 0 || cxt == nullptr) {
-        std::cerr << "Initialization failed: " << std::hex << rc << std::endl;
+        io_logging->log_error("Initialization failed");
         close_fptr(cxt);
         return nullptr;
     }
@@ -91,20 +81,21 @@ load_assembly_and_get_function_pointer_fn get_dotnet_load_assembly(const char_t*
     // Get the load assembly function pointer
     rc = get_delegate_fptr(cxt, hdt_load_assembly_and_get_function_pointer, &load_assembly_and_get_function_pointer);
     if (rc != 0 || load_assembly_and_get_function_pointer == nullptr) {
-        std::cerr << "Failed to get delegate" << std::endl;
+        io_logging->log_error("Failed to get delegate");
     }
 
     close_fptr(cxt);
     return reinterpret_cast<load_assembly_and_get_function_pointer_fn>(load_assembly_and_get_function_pointer);
 }
 
+typedef void (CORECLR_DELEGATE_CALLTYPE* custom_entry_point_fn)(float delta_t);
+// Function pointer to managed delegate
+custom_entry_point_fn on_tick_entry_point = nullptr;
 
-
-int main() {
+void init() {
     // Load hostfxr and get the required functions
     if (!load_hostfxr()) {
-        std::cerr << "Failed to load hostfxr" << std::endl;
-        return EXIT_FAILURE;
+        io_logging->log_error("Failed to load hostfxr");
     }
 
     // Define the path to the configuration file
@@ -113,14 +104,13 @@ int main() {
     // Get function pointer for loading the assembly
     load_assembly_and_get_function_pointer_fn load_fn = get_dotnet_load_assembly(runtime_config_path);
     if (!load_fn) {
-        std::cerr << "Failed to get load assembly function pointer" << std::endl;
-        return EXIT_FAILURE;
+        io_logging->log_error("Failed to get load assembly function pointer");
     }
 
     const string_t dotnetlib_path = STR("IOLITE_Library.dll");
     const char_t* dotnet_type = STR("IOLITE_Library.Class1, IOLITE_Library");
     const char_t* dotnet_type_method = STR("Run");
-    // <SnippetLoadAndGet>
+
     // Function pointer to managed delegate
     component_entry_point_fn hello = nullptr;
     int rc = load_fn(
@@ -130,12 +120,9 @@ int main() {
         nullptr /*delegate_type_name*/,
         nullptr,
         (void**)&hello);
-    // </SnippetLoadAndGet>
+
     assert(rc == 0 && hello != nullptr && "Failure: load_assembly_and_get_function_pointer()");
 
-    //
-    // STEP 4: Run managed code
-    //
     struct lib_args
     {
         const char_t* message;
@@ -143,7 +130,7 @@ int main() {
     };
     for (int i = 0; i < 3; ++i)
     {
-        // <SnippetCallManaged>
+
         lib_args args
         {
             STR("from host!"),
@@ -151,12 +138,57 @@ int main() {
         };
 
         hello(&args, sizeof(args));
-        // </SnippetCallManaged>
+
     }
 
+    
+    int on_tick_rc = load_fn(
+        dotnetlib_path.c_str(),
+        dotnet_type,
+        STR("On_Tick"),
+        STR("IOLITE_Library.Class1+On_Tick_Delegate, IOLITE_Library"),
+        nullptr,
+        (void**)&on_tick_entry_point);
+
+    assert(rc == 0 && on_tick_entry_point != nullptr && "Failure: load_assembly_and_get_function_pointer()");
+
+    
 
     // Close the runtime handle
     close_fptr(nullptr);
+}
 
-    return EXIT_SUCCESS;
+
+//On tick
+void on_tick(io_float32_t delta_t)
+{
+
+    on_tick_entry_point(delta_t);
+}
+
+
+
+IO_API_EXPORT io_int32_t IO_API_CALL load_plugin(void* api_manager)
+{
+    // Ensure we can keep accessing the API manager after loading the plugin
+    io_api_manager = (const struct io_api_manager_i*)api_manager;
+
+    io_user_task = {};
+    io_user_task.on_tick = on_tick;
+    io_api_manager->register_api(IO_USER_TASK_API_NAME, &io_user_task);
+
+    // Do something with the API manager, set up your plugin, etc.
+    io_logging = (const io_logging_i*)io_api_manager->find_first(IO_LOGGING_API_NAME);
+    init();
+    io_logging->log_warning("Initilized DotnetHost");
+
+    return 0; // Return a value < 0 to indicate that the loading of your plugin
+    // has failed (depedency not available, etc.)
+}
+
+
+
+IO_API_EXPORT void IO_API_CALL unload_plugin()
+{
+    // Clean up here
 }

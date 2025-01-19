@@ -17,7 +17,7 @@ set(HEADER_FILES
 )
 
 # Add source files
-add_executable(dotnetHost ${PROJECT_DIR}/dotnetHost.cpp ${PROJECT_DIR}/dotnetHost.h ${HEADER_FILES})
+add_library(dotnetHost SHARED ${PROJECT_DIR}/dotnetHost.cpp ${HEADER_FILES})
 
 # Set the C++ standard
 set_property(TARGET dotnetHost PROPERTY CXX_STANDARD 20)
@@ -32,4 +32,11 @@ if(WIN32)
 else()
     # Link libnethost.so on Linux/macOS
     target_link_libraries(dotnetHost PRIVATE nethost dl)
+endif()
+
+# Define export macros for different platforms
+if(WIN32)
+    target_compile_definitions(dotnetHost PRIVATE DOTNETHOST_EXPORTS)
+else()
+    target_compile_definitions(dotnetHost PRIVATE __DOTNETHOST_EXPORTS__)
 endif()

@@ -13,4 +13,5 @@ project ("dotnetHost")
 
 # Include sub-projects.
 add_subdirectory ("dotnetHost")
+add_subdirectory ("iolite_api")
 

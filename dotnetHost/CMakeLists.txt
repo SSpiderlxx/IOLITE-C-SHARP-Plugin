@@ -13,6 +13,7 @@ set(HEADER_FILES
     ${PROJECT_DIR}/inc/coreclr_delegates.h
     ${PROJECT_DIR}/inc/hostfxr.h
     ${PROJECT_DIR}/inc/nethost.h
+    ${PROJECT_DIR}/inc/iolite_api.h
 )
 
 # Add source files

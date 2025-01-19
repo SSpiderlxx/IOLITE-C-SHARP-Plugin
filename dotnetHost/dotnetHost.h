@@ -20,6 +20,9 @@
 #include "inc/hostfxr.h"
 #include "inc/nethost.h"
 
+//Iolite headers
+#include "inc/iolite_api.h"
+
 #ifdef _WIN32
 #include <Windows.h>  // For HMODULE and LoadLibraryA
 #define STR(s) L ## s

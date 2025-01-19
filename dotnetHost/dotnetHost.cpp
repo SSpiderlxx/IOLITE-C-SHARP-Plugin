@@ -1,5 +1,31 @@
 ﻿#include "dotnetHost.h"
 
+//Iolite api
+const struct io_api_manager_i* io_api_manager = 0;
+
+IO_API_EXPORT io_uint32_t IO_API_CALL get_api_version()
+{
+    // Inform IOLITE which version of the API you are using
+    return IO_API_VERSION;
+}
+
+IO_API_EXPORT io_int32_t IO_API_CALL load_plugin(void* api_manager)
+{
+    // Ensure we can keep accessing the API manager after loading the plugin
+    io_api_manager = (const struct io_api_manager_i*)api_manager;
+
+    // Do something with the API manager, set up your plugin, etc.
+
+    return 0; // Return a value < 0 to indicate that the loading of your plugin
+    // has failed (depedency not available, etc.)
+}
+
+IO_API_EXPORT void IO_API_CALL unload_plugin()
+{
+    // Clean up here
+}
+
+
 #define MAX_PATH 260
 
 using string_t = std::basic_string<char_t>;

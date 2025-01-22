@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace IOLITE_Library
@@ -60,6 +61,58 @@ namespace IOLITE_Library
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct io_ref_type_id_t
+    {
+        public uint Value;
+
+        public io_ref_type_id_t(uint value)
+        {
+            Value = value;
+        }
+
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
+
+        public static implicit operator uint(io_ref_type_id_t typeId)
+        {
+            return typeId.Value;
+        }
+
+        public static implicit operator io_ref_type_id_t(uint value)
+        {
+            return new io_ref_type_id_t(value);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct io_uuid_t
+    {
+        public ulong Value;
+
+        public io_uuid_t(ulong value)
+        {
+            Value = value;
+        }
+
+        public override string ToString()
+        {
+            return Value.ToString("X");
+        }
+
+        public static implicit operator ulong(io_uuid_t uuid)
+        {
+            return uuid.Value;
+        }
+
+        public static implicit operator io_uuid_t(ulong value)
+        {
+            return new io_uuid_t(value);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct io_ref_t
     {
         public ushort id;
@@ -124,6 +177,12 @@ namespace IOLITE_Library
         public float radius;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct io_name_t
+    {
+        public uint hash;
+    }
+
     public class Class1
     {
 
@@ -167,6 +226,9 @@ namespace IOLITE_Library
         public static extern float get_current_time_factor();
 
         // Provides access to node components
+        [DllImport("iolite_api.dll")]
+        public static extern io_ref_t get_node_for_entity(io_ref_t entity);
+
         [DllImport("iolite_api.dll")]
         public static extern io_ref_t create_node(string name);
 
@@ -350,18 +412,180 @@ namespace IOLITE_Library
                     return intersectingNodes;
                 }
 
+        // Provides access to tag components
+        [DllImport("iolite_api.dll")]
+        public static extern io_ref_t component_tag_for_entity(io_ref_t entity);
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void find_entities_with_tag(
+            string tag,
+            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] io_ref_t[] entities,
+            ref ulong entities_length
+        );
+
+        public static io_ref_t[] CallFindEntitiesWithTag(string tag)
+        {
+            // Validate input
+            if (string.IsNullOrWhiteSpace(tag))
+            {
+                throw new ArgumentException("The tag must not be null or empty.");
+            }
+
+            // Prepare the output buffer with a large initial size
+            ulong entitiesLength = 1024; // Start with a reasonably large size
+            io_ref_t[] entities = new io_ref_t[entitiesLength];
+
+            // Call the native function
+            find_entities_with_tag(tag, entities, ref entitiesLength);
+
+            // Resize the output array to match the actual number of entities found
+            Array.Resize(ref entities, (int)entitiesLength);
+
+            // Return the entities
+            return entities;
+        }
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void get_tags(
+            io_ref_t tag,
+            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] io_name_t[] tags,
+            ref ulong tags_length
+        );
+
+        public static io_name_t[] CallGetTags(io_ref_t tag)
+        {
+            // Prepare the output buffer with a large initial size
+            ulong tagsLength = 1024;  // Start with a reasonably large size
+            io_name_t[] tags = new io_name_t[tagsLength];
+
+            // Call the native function
+            get_tags(tag, tags, ref tagsLength);
+
+            // Resize the output array to match the actual number of tags
+            Array.Resize(ref tags, (int)tagsLength);
+
+            // Return the tags
+            return tags;
+        }
+
+        [DllImport("iolite_api.dll")]
+        public static extern void add_tag(io_ref_t entity, string tag);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void remove_tag(io_ref_t entity, string tag);
+
+        // Provides access to the entity component
+        [DllImport("iolite_api.dll")]
+        public static extern io_ref_type_id_t get_entity_type_id();
+
+        [DllImport("iolite_api.dll")]
+        public static extern bool is_alive(io_ref_t entity);
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern IntPtr get_name(io_ref_t entity);
+
+        public static string GetName(io_ref_t entity)
+        {
+            IntPtr ptr = get_name(entity);
+            return Marshal.PtrToStringAnsi(ptr);
+        }
+
+        [DllImport("iolite_api.dll")]
+        public static extern io_uuid_t get_uuid(io_ref_t entity);
+
+        [DllImport("iolite_api.dll")]
+        public static extern io_ref_t find_first_entity_with_name(string name);
+
+        [DllImport("iolite_api.dll")]
+        public static extern io_ref_t find_entity_with_uuid(io_uuid_t uuid);
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void find_entities_with_name(
+            string name,
+            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] io_ref_t[] entities,
+            ref ulong entities_length
+        );
+
+        public static io_ref_t[] CallFindEntitiesWithName(string name)
+        {
+            // Validate input
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("The name cannot be null or empty.");
+            }
+
+            // Prepare the output buffer with a large initial size
+            ulong entitiesLength = 1024;  // Start with a reasonably large size
+            io_ref_t[] entities = new io_ref_t[entitiesLength];
+
+            // Call the native function
+            find_entities_with_name(name, entities, ref entitiesLength);
+
+            // Resize the output array to match the actual number of entities found
+            Array.Resize(ref entities, (int)entitiesLength);
+
+            // Return the entities
+            return entities;
+        }
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void find_entities_with_component(
+            string componentTypeName,
+            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] io_ref_t[] entities,
+            ref ulong entities_length
+        );
+
+        public static io_ref_t[] CallFindEntitiesWithComponent(string componentTypeName)
+        {
+            // Validate input
+            if (string.IsNullOrWhiteSpace(componentTypeName))
+            {
+                throw new ArgumentException("The component type name cannot be null or empty.");
+            }
+
+            // Prepare the output buffer with a large initial size
+            ulong entitiesLength = 1024;  // Start with a reasonably large size
+            io_ref_t[] entities = new io_ref_t[entitiesLength];
+
+            // Call the native function
+            find_entities_with_component(componentTypeName, entities, ref entitiesLength);
+
+            // Resize the output array to match the actual number of entities found
+            Array.Resize(ref entities, (int)entitiesLength);
+
+            // Return the entities
+            return entities;
+        }
+
+        
+
         public static int Run(IntPtr arg, int argLength)
         {
             log_warning($"Hello from .NET!");
             return 0;  // Return an integer as expected by the delegate signature
         }
 
-        //public static void On_Load();
+        public static void On_Activate()
+        {
+            log_warning("On_Activate");
+        }
 
         public delegate void On_Tick_Delegate(float delta_t);
         public static void On_Tick(float delta_t){
             log_warning("On_Tick");
-            log_warning(get_active_camera().IsValid.ToString());
+
+            //move node named "deer" to the right
+            io_ref_t deer = find_first_entity_with_name("deer");
+
+            log_warning(deer.id.ToString() + deer.type.ToString());
+
+            log_info(GetName(deer));
+            io_ref_t node = get_node_for_entity(deer);
+
+            io_vec3_t pos = get_node_world_position(node);
+
+            pos.x += 0.1f;
+            set_node_world_position(node, pos);
         }
     }
 }

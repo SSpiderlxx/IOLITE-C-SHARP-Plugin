@@ -19,6 +19,14 @@ static const io_component_node_i* io_component_node = nullptr;
 static const io_component_tag_i* io_component_tag = nullptr;
 // Declare io_entity interface
 static const io_entity_i* io_entity = nullptr;
+// Declare io_input interface
+static const io_input_system_i* io_input_system = nullptr;
+// Declare io_animation_system interface
+static const io_animation_system_i* io_animation_system = nullptr;
+// Declare io_physics interface
+static const io_physics_i* io_physics = nullptr;
+// Declare io_custom_event_streams interface
+static const io_custom_event_streams_i* io_custom_event_streams = nullptr;
 
 IO_API_EXPORT io_uint32_t IO_API_CALL get_api_version()
 {
@@ -43,6 +51,14 @@ IO_API_EXPORT io_int32_t IO_API_CALL load_plugin(const void* api_manager)
     io_component_tag = (const io_component_tag_i*)io_api_manager->find_first(IO_COMPONENT_TAG_API_NAME);
 	// Retrieve the entity interface
 	io_entity = (const io_entity_i*)io_api_manager->find_first(IO_ENTITY_API_NAME);
+	// Retrieve the input system interface
+	io_input_system = (const io_input_system_i*)io_api_manager->find_first(IO_INPUT_SYSTEM_API_NAME);
+	// Retrieve the animation system interface
+	io_animation_system = (const io_animation_system_i*)io_api_manager->find_first(IO_ANIMATION_SYSTEM_API_NAME);
+	// Retrieve the physics interface
+	io_physics = (const io_physics_i*)io_api_manager->find_first(IO_PHYSICS_API_NAME);
+	// Retrieve the custom event streams interface
+	io_custom_event_streams = (const io_custom_event_streams_i*)io_api_manager->find_first(IO_CUSTOM_EVENT_STREAMS_API_NAME);
 
     return 0;
 }
@@ -461,3 +477,107 @@ IO_API_EXPORT void find_entities_with_component(
     // Resize the output vector to match the actual number of entities found
     entities.resize(entities_length);
 }
+
+// Provides access to the input system
+IO_API_EXPORT io_input_key_state get_key_state(io_input_key key, io_int8_t player_id) {
+	return io_input_system->get_key_state(key, player_id);
+}
+
+IO_API_EXPORT io_float32_t get_axis_state(io_input_axis axis, io_uint8_t player_id) {
+	return io_input_system->get_axis_state(axis, player_id);
+}
+
+IO_API_EXPORT io_vec2_t get_mouse_pos() {
+	return io_input_system->get_mouse_pos();
+}
+
+IO_API_EXPORT io_vec2_t get_mouse_pos_viewport() {
+	return io_input_system->get_mouse_pos_viewport();
+}
+
+IO_API_EXPORT io_vec2_t get_mouse_pos_relative() {
+	return io_input_system->get_mouse_pos_relative();
+}
+
+IO_API_EXPORT void request_mouse_cursor() {
+	io_input_system->request_mouse_cursor();
+}
+
+// Provides access to the animation system
+IO_API_EXPORT io_handle64_t play_animation(io_ref_t node, const io_animation_system_animation_desc_t* desc) {
+	return io_animation_system->play_animation(node, desc);
+}
+
+IO_API_EXPORT void stop_animation(io_handle64_t instance) {
+	io_animation_system->stop_animation(instance);
+}
+
+IO_API_EXPORT void stop_animations(io_ref_t node) {
+	io_animation_system->stop_animations(node);
+}
+
+IO_API_EXPORT void stop_all_animations(io_ref_t node) {
+	io_animation_system->stop_all_animations(node);
+}
+
+IO_API_EXPORT void pause_animation(io_handle64_t instance) {
+	io_animation_system->pause_animation(instance);
+}
+
+IO_API_EXPORT void resume_animtion(io_handle64_t instance) {
+	io_animation_system->resume_animation(instance);
+}
+
+IO_API_EXPORT io_bool_t is_finished(io_handle64_t instance) {
+	return io_animation_system->is_finished(instance);
+}
+
+IO_API_EXPORT void blend_in_out(io_handle64_t instance, io_float32_t target_blend_weight, io_float32_t duration, io_float32_t delay, io_bool_t stop_animation) {
+	io_animation_system->blend_in_out(instance, target_blend_weight, duration, delay, stop_animation);
+}
+
+IO_API_EXPORT io_float32_t get_blend_weight(io_handle64_t instance) {
+	return io_animation_system->get_blend_weight(instance);
+}
+
+IO_API_EXPORT void set_blend_weight(io_handle64_t instance, io_float32_t weight) {
+	io_animation_system->set_blend_weight(instance, weight);
+}
+
+IO_API_EXPORT io_float32_t get_play_speed(io_handle64_t instance) {
+	return io_animation_system->get_play_speed(instance);
+}
+
+IO_API_EXPORT void set_play_speed(io_handle64_t instance, io_float32_t speed) {
+	io_animation_system->set_play_speed(instance, speed);
+}
+
+IO_API_EXPORT io_float32_t get_timeline_position(io_handle64_t instance) {
+	return io_animation_system->get_timeline_position(instance);
+}
+
+IO_API_EXPORT void set_timeline_position(io_handle64_t instance, io_float32_t position) {
+	io_animation_system->set_timeline_position(instance, position);
+}
+
+// Provides access to the physics system
+IO_API_EXPORT void set_gravity(io_vec3_t gravity) {
+	io_physics->set_gravity(gravity);
+}
+
+IO_API_EXPORT io_vec3_t get_gravity() {
+	return io_physics->get_gravity();
+}
+
+IO_API_EXPORT io_physics_overlap_result_t overlap_sphere(io_vec3_t position, io_float32_t radius, io_uint32_t group_mask) {
+	return io_physics->overlap_sphere(position, radius, group_mask);
+}
+
+IO_API_EXPORT io_physics_raycast_result_t sweep_sphere(io_vec3_t position, io_float32_t radius, io_vec3_t direction, io_float32_t distance, io_uint32_t group_mask) {
+	return io_physics->sweep_sphere(position, radius, direction, distance, group_mask);
+}
+
+IO_API_EXPORT io_physics_raycast_result_t raycast(io_vec3_t origin, io_vec3_t direction, io_float32_t distance, io_uint32_t group_mask) {
+	return io_physics->raycast(origin, direction, distance, group_mask);
+}
+

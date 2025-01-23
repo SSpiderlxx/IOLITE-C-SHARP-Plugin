@@ -22,6 +22,18 @@ namespace IOLITE_Library
         }
     }
 
+    public struct io_vec2_t
+    {
+        public float x;
+        public float y;
+
+        public io_vec2_t(float x, float y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
     // Struct to represent an axis-aligned bounding box (AABB)
     public struct io_aabb_t
     {
@@ -181,6 +193,163 @@ namespace IOLITE_Library
     public struct io_name_t
     {
         public uint hash;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct io_animation_system_animation_desc_t
+    {
+        public string animation_name;
+
+        public float play_speed;
+        public float bend_weight;
+        public float blend_in_out_duration;
+        public float priority;
+
+        public float delay;
+
+        public bool looping;
+        public bool restore_when_finished;
+    }
+
+    public struct io_handle64_t
+    {
+        public ulong Internal { get; set; }
+
+        public IoHandle64(ulong internalValue)
+        {
+            Internal = internalValue;
+        }
+
+        public static IoHandle64 Invalid => new IoHandle64(ulong.MaxValue);
+
+        public bool IsValid => Internal != ulong.MaxValue;
+    }
+
+    public enum io_input_key_state
+    {
+        Released,
+        Pressed,
+        Clicked
+    }
+
+    public enum io_input_key
+    {
+        Up,
+        Down,
+        Left,
+        Right,
+        A,
+        B,
+        C,
+        D,
+        E,
+        F,
+        G,
+        H,
+        I,
+        J,
+        K,
+        L,
+        M,
+        N,
+        O,
+        P,
+        Q,
+        R,
+        S,
+        T,
+        U,
+        V,
+        W,
+        X,
+        Y,
+        Z,
+        Key0,
+        Key1,
+        Key2,
+        Key3,
+        Key4,
+        Key5,
+        Key6,
+        Key7,
+        Key8,
+        Key9,
+        F1,
+        F2,
+        F3,
+        F4,
+        F5,
+        F6,
+        F7,
+        F8,
+        F9,
+        F10,
+        F11,
+        F12,
+        Del,
+        Backspace,
+        Tab,
+        MouseLeft,
+        MouseRight,
+        MouseMiddle,
+        Shift,
+        Alt,
+        Ctrl,
+        Space,
+        Escape,
+        Return,
+        NumPlus,
+        NumMinus,
+        Num0,
+        Num1,
+        Num2,
+        Num3,
+        Num4,
+        Num5,
+        Num6,
+        Num7,
+        Num8,
+        Num9,
+        ControllerButtonA,
+        ControllerButtonY,
+        ControllerButtonB,
+        ControllerButtonX,
+        Any,
+        Invalid,
+        NumKeys
+    }
+
+    public enum io_input_axis : byte
+    {
+        LeftX,
+        LeftY,
+        RightX,
+        RightY,
+        TriggerLeft,
+        TriggerRight,
+        Invalid
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct io_physics_overlap_result_t
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public bool hit;
+
+        public io_ref_t entity;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct io_physics_raycast_result_t
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public bool hit;
+
+        public float distance;
+        public io_vec3_t position;
+        public io_vec3_t normal;
+
+        public io_ref_t entity;
     }
 
     public class Class1
@@ -557,7 +726,78 @@ namespace IOLITE_Library
             return entities;
         }
 
-        
+        // Provides access to the input system
+        [DllImport("iolite_api.dll")]
+        public static extern io_input_key_state get_key_state(io_input_key key);
+
+        [DllImport("iolite_api.dll")]
+        puvlic static extern float get_axis_state(io_input_axis axis);
+
+        [DllImport("iolite_api.dll")]
+        public static extern io_vec2_t get_mouse_pos();
+
+        [DllImport("iolite_api.dll")]
+        public static extern io_vec2_t get_mouse_pos_viewport();
+
+        [DllImport("iolite_api.dll")]
+        public static extern io_vec2_t get_moise_pos_relative();
+
+        [DllImport("iolite_api.dll")]
+        public static extern void request_mouse_cursor();
+
+        // Provides access to the animation system
+        [DllImport("iolite_api.dll")]
+        public static extern void play_animation(io_ref_t node, io_animation_system_animation_desc_t desc);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void stop_animation(io_ref_t node, string animation_name);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void stop_all_animations(io_ref_t node);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void stop_all_animations(io_ref_t node);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void pause_animation(io_handle64_t instance);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void resume_animation(io_handle64_t instance);
+
+        [DllImport("iolite_api.dll")]
+        public static extern bool is_finished(io_handle64_t instance);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void blend_in_out(io_handle64_t instance, float target_blend_weight, float duration, float delay, bool stop_animation);
+
+        [DllImport("iolite_api.dll")]
+        public static extern float get_blend_weight(io_handle64_t instance);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void set_blend_weight(io_handle64_t instance, float weight);
+
+        [DllImport("iolite_api.dll")]
+        public static extern float get_play_speed(io_handle64_t instance);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void set_play_speed(io_handle64_t instance, float speed);
+
+        [DllImport("iolite_api.dll")]
+        public static extern float get_timeline_position(io_handle64_t instance);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void set_timeline_position(io_handle64_t instance, float position);
+
+        // Provides access to the physics system
+        [DllImport("iolite_api.dll")]
+        public static extern io_physics_overlap_result_t overlap_sphere(io_vec3_t position, float radius, int group_mask);
+
+        [DllImport("iolite_api.dll")]
+        public static extern io_physics_raycast_result_t sweep_sphere(io_vec3_t positon, float radius, io_vec3_t direction, float distance, int group_mask);
+
+        [DllImport("iolite_api.dll")]
+        public static extern io_physics_raycast_result_t raycast(io_vec3_t origin, io_vec3_t direction, float distance, int group_mask);
+
 
         public static int Run(IntPtr arg, int argLength)
         {

@@ -192,3 +192,9 @@ IO_API_EXPORT void IO_API_CALL unload_plugin()
 {
     // Clean up here
 }
+
+void restart_plugin()
+{
+	unload_plugin();
+	load_plugin((void*)io_api_manager);
+}

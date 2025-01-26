@@ -27,6 +27,8 @@ static const io_animation_system_i* io_animation_system = nullptr;
 static const io_physics_i* io_physics = nullptr;
 // Declare io_custom_event_streams interface
 static const io_custom_event_streams_i* io_custom_event_streams = nullptr;
+// Delcare io_ui interface
+static const io_ui_i* io_ui = nullptr;
 
 IO_API_EXPORT io_uint32_t IO_API_CALL get_api_version()
 {
@@ -59,6 +61,8 @@ IO_API_EXPORT io_int32_t IO_API_CALL load_plugin(const void* api_manager)
 	io_physics = (const io_physics_i*)io_api_manager->find_first(IO_PHYSICS_API_NAME);
 	// Retrieve the custom event streams interface
 	io_custom_event_streams = (const io_custom_event_streams_i*)io_api_manager->find_first(IO_CUSTOM_EVENT_STREAMS_API_NAME);
+	// Retrieve the ui interface
+	io_ui = (const io_ui_i*)io_api_manager->find_first(IO_UI_API_NAME);
 
     return 0;
 }
@@ -581,3 +585,87 @@ IO_API_EXPORT io_physics_raycast_result_t raycast(io_vec3_t origin, io_vec3_t di
 	return io_physics->raycast(origin, direction, distance, group_mask);
 }
 
+// Provides access to the ui system
+IO_API_EXPORT void draw_rect(io_vec4_t color) {
+	io_ui->draw_rect(color);
+}
+
+IO_API_EXPORT void draw_circle(io_vec4_t color) {
+	io_ui->draw_circle(color);
+}
+
+IO_API_EXPORT void draw_ngon(io_vec4_t color, io_uint32_t sides) {
+	io_ui->draw_ngon(color, sides);
+}
+
+IO_API_EXPORT void draw_image(const char* name, io_vec4_t tint) {
+	io_ui->draw_image(name, tint);
+}
+
+IO_API_EXPORT void draw_text(const char* text, io_ui_text_align_horizontal align_horizontal, io_ui_text_align_vertical align_vertical, io_ui_text_flag flags) {
+	io_ui->draw_text(text, align_horizontal, align_vertical, flags);
+}
+
+IO_API_EXPORT io_ui_rect_t calc_text_bounds(const char* text, io_ui_text_align_horizontal align_horizontal, io_ui_text_align_vertical align_vertical, io_ui_text_flag flags) {
+	return io_ui->calc_text_bounds(text, align_horizontal, align_vertical, flags);
+}
+
+IO_API_EXPORT io_ui_rect_t get_last_text_bounds() {
+	return io_ui->get_last_text_bounds();
+}
+
+IO_API_EXPORT void push_transform(io_ui_anchor_t left, io_ui_anchor_t right,
+    io_ui_anchor_t top, io_ui_anchor_t bottom,
+    io_float32_t rotation) {
+	io_ui->push_transform(left, right, top, bottom, rotation);
+}
+
+IO_API_EXPORT void push_transform_preset(io_ui_anchor_preset preset,
+    io_ui_anchor_offsets_t offsets,
+    io_float32_t rotation) {
+	io_ui->push_transform_preset(preset, offsets, rotation);
+}
+
+IO_API_EXPORT void pop_transform() {
+	io_ui->pop_transform();
+}
+
+IO_API_EXPORT void push_scale_offset_for_base_size(io_vec2_t base_size, io_ui_aspect_mode aspect_mode){
+	io_ui->push_scale_offset_for_base_size(base_size, aspect_mode);
+}
+
+IO_API_EXPORT void push_scale_offset(io_float32_t scale, io_vec2_t offset) {
+	io_ui->push_scale_offset(scale, offset);
+}
+
+IO_API_EXPORT void pop_scale_offset() {
+	io_ui->pop_scale_offset();
+}
+
+IO_API_EXPORT void push_style_var_float(io_ui_style_var var, io_float32_t value) {
+	io_ui->push_style_var_float(var, value);
+}
+
+IO_API_EXPORT void push_style_var_vec4(io_ui_style_var var, io_vec4_t value) {
+	io_ui->push_style_var_vec4(var, value);
+}
+
+IO_API_EXPORT void pop_style_var() {
+	io_ui->pop_style_var();
+}
+
+IO_API_EXPORT void clip_children() {
+	io_ui->clip_children();
+}
+
+IO_API_EXPORT void push_font_size(io_float32_t size) {
+	io_ui->push_font_size(size);
+}
+
+IO_API_EXPORT void pop_font_size() {
+	io_ui->pop_font_size();
+}
+
+IO_API_EXPORT io_bool_t intersects(io_vec2_t position) {
+	return io_ui->intersects(position);
+}

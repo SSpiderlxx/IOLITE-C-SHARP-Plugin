@@ -22,6 +22,28 @@ namespace IOLITE_Library
         }
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct io_vec4_t
+    {
+        public float x;
+        public float y;
+        public float z;
+        public float w;
+
+        public io_vec4_t(float x, float y, float z, float w)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        }
+
+        public override string ToString()
+        {
+            return $"({x}, {y}, {z}, {w})";
+        }
+    }
+
     public struct io_vec2_t
     {
         public float x;
@@ -350,6 +372,114 @@ namespace IOLITE_Library
         public io_vec3_t normal;
 
         public io_ref_t entity;
+    }
+
+    public enum io_ui_text_align_horizontal
+    {
+        Left = 0,   // io_ui_text_align_horizontal_left
+        Center = 1, // io_ui_text_align_horizontal_center
+        Right = 2   // io_ui_text_align_horizontal_right
+    }
+
+    public enum io_ui_text_align_vertical
+    {
+        Top = 0,    // io_ui_text_align_vertical_top
+        Center = 1, // io_ui_text_align_vertical_center
+        Bottom = 2  // io_ui_text_align_vertical_bottom
+    }
+
+    [Flags]
+    public enum io_ui_text_flag
+    {
+        None = 0,
+        Wrap = 0x01 // io_ui_text_flag_wrap
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct io_ui_rect_t
+    {
+        public io_vec2_t pos;
+        public io_vec2_t extent;
+
+        public io_ui_rect_t(io_vec2_t pos, io_vec2_t extent)
+        {
+            this.pos = pos;
+            this.extent = extent;
+        }
+
+        public override string ToString()
+        {
+            return $"Pos: {pos}, Extent: {extent}";
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct io_ui_anchor_t
+    {
+        public float anchor;
+        public float offset;
+
+        public io_ui_anchor_t(float anchor, float offset)
+        {
+            this.anchor = anchor;
+            this.offset = offset;
+        }
+
+        public override string ToString()
+        {
+            return $"Anchor: {anchor}, Offset: {offset}";
+        }
+    }
+
+    public enum io_ui_anchor_preset
+    {
+        FullRect,       // io_ui_anchor_preset_full_rect
+        TopLeft,        // io_ui_anchor_preset_top_left
+        TopRight,       // io_ui_anchor_preset_top_right
+        BottomRight,    // io_ui_anchor_preset_bottom_right
+        BottomLeft,     // io_ui_anchor_preset_bottom_left
+        CenterLeft,     // io_ui_anchor_preset_center_left
+        CenterTop,      // io_ui_anchor_preset_center_top
+        CenterRight,    // io_ui_anchor_preset_center_right
+        CenterBottom,   // io_ui_anchor_preset_center_bottom
+        Center          // io_ui_anchor_preset_center
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct io_ui_anchor_offsets_t
+    {
+        public float left;
+        public float right;
+        public float top;
+        public float bottom;
+
+        public io_ui_anchor_offsets_t(float left, float right, float top, float bottom)
+        {
+            this.left = left;
+            this.right = right;
+            this.top = top;
+            this.bottom = bottom;
+        }
+
+        public override string ToString()
+        {
+            return $"Left: {left}, Right: {right}, Top: {top}, Bottom: {bottom}";
+        }
+    }
+
+    public enum io_ui_aspect_mode
+    {
+        Keep = 0 // io_ui_aspect_mode_keep
+    }
+
+    public enum io_ui_style_var
+    {
+        TextColor,            // io_ui_style_var_text_color
+        TextOutlineColor,     // io_ui_style_var_text_outline_color
+        TextOutline,          // io_ui_style_var_text_outline
+        RectRounding,         // io_ui_style_var_rect_rounding
+        DrawOutline,          // io_ui_style_var_draw_outline
+        Alpha                 // io_ui_style_var_alpha
     }
 
     public class Class1
@@ -798,6 +928,66 @@ namespace IOLITE_Library
         [DllImport("iolite_api.dll")]
         public static extern io_physics_raycast_result_t raycast(io_vec3_t origin, io_vec3_t direction, float distance, int group_mask);
 
+        // Provides access to the UI system
+        [DllImport("iolite_api.dll")]
+        public static extern void draw_rect(io_vec4_t color);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void draw_circle(io_vec4_t color);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void draw_ngon(io_vec4_t color, uint sides);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void draw_image(string name, io_vec4_t tint);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void draw_text(string text, int align_horizontal, int align_vertical, int flags);
+
+        [DllImport("iolite_api.dll")]
+        public static extern io_ui_rect_t calc_text_bounds(string text, int align_horizontal, int align_vertical, int flags);
+
+        [DllImport("iolite_api.dll")]
+        public static extern io_ui_rect_t get_last_text_bounds();
+
+        [DllImport("iolite_api.dll")]
+        public static extern void push_transform(io_ui_anchor_t left, io_ui_anchor_t right, io_ui_anchor_t top, io_ui_anchor_t bottom, float rotation);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void push_transform_preset(io_ui_anchor_preset preset, io_ui_anchor_offsets_t offsets, float rotation);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void pop_transform();
+
+        [DllImport("iolite_api.dll")]
+        public static extern void push_scale_offset_for_base_size(io_vec2_t base_size, io_ui_aspect_mode aspect_mode);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void push_scale_offset(float scale, io_vec2_t offset);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void pop_scale_offset();
+
+        [DllImport("iolite_api.dll")]
+        public static extern void push_style_var_float(io_ui_style_var var, float value);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void push_style_var_vec4(io_ui_style_var var, io_vec4_t value);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void pop_style_var();
+
+        [DllImport("iolite_api.dll")]
+        public static extern void clip_children();
+
+        [DllImport("iolite_api.dll")]
+        public static extern void push_font_size(float size);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void pop_font_size();
+
+        [DllImport("iolite_api.dll")]
+        public static extern bool intersects(io_vec2_t position);
 
         public static int Run(IntPtr arg, int argLength)
         {

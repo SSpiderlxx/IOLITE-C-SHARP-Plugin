@@ -671,12 +671,81 @@ IO_API_EXPORT io_bool_t intersects(io_vec2_t position) {
 }
 
 // Provides access to the filesystem
-IO_API_EXPORT io_bool_t load_file_from_data_source(const char* filepath, io_uint8_t* buffer, io_size_t* buffer_length) {
-	return io_filesystem->load_file_from_data_source(filepath, buffer, buffer_length);
+
+IO_API_EXPORT io_bool_t load_file_from_data_source(const char* filepath, std::vector<io_uint8_t>& data) {
+    if (io_filesystem != nullptr) {
+        io_size_t buffer_length = 0u;
+        // First call to get the required buffer size
+        io_bool_t result = io_filesystem->load_file_from_data_source(filepath, nullptr, &buffer_length);
+        if (result == IO_TRUE && buffer_length > 0u) {
+            data.resize(buffer_length);
+            result = io_filesystem->load_file_from_data_source(filepath, data.data(), &buffer_length);
+            if (result == IO_FALSE) {
+                io_logging->log_error("Failed to load file data.");
+                data.clear();
+            }
+        }
+        else {
+            io_logging->log_error("Failed to load file from data source or file is empty.");
+            data.clear();
+            result = IO_FALSE;
+        }
+        return result;
+    }
+    else {
+        io_logging->log_error("Filesystem interface is not available.");
+        return IO_FALSE;
+    }
 }
 
-IO_API_EXPORT void create_or_retrieve_user_directory(const char* subdirectory, char* buffer, io_size_t* buffer_length) {
-	io_filesystem->create_or_retrieve_user_directory(subdirectory, buffer, buffer_length);
+IO_API_EXPORT io_bool_t create_or_retrieve_user_directory(const char* subdirectory, std::string& directory_path) {
+    if (io_filesystem != nullptr) {
+        io_size_t buffer_length = 0u;
+        // First call to get the required buffer size
+        io_filesystem->create_or_retrieve_user_directory(subdirectory, nullptr, &buffer_length);
+        if (buffer_length > 0u) {
+            directory_path.resize(buffer_length);
+            io_filesystem->create_or_retrieve_user_directory(subdirectory, &directory_path[0], &buffer_length);
+            // Trim any excess null characters
+            directory_path.resize(strlen(directory_path.c_str()));
+            return IO_TRUE;
+        }
+        else {
+            io_logging->log_error("Failed to retrieve user directory.");
+            directory_path.clear();
+            return IO_FALSE;
+        }
+    }
+    else {
+        io_logging->log_error("Filesystem interface is not available.");
+        directory_path.clear();
+        return IO_FALSE;
+    }
 }
 
+IO_API_EXPORT void watch_directory(const char* directory_path, io_filesystem_on_file_changed_function callback) {
+    if (io_filesystem != nullptr) {
+        io_filesystem->watch_directory(directory_path, callback);
+    }
+    else {
+        io_logging->log_error("Filesystem interface is not available.");
+    }
+}
 
+IO_API_EXPORT void watch_data_source_directory(const char* directory_path, io_filesystem_on_file_changed_function callback) {
+    if (io_filesystem != nullptr) {
+        io_filesystem->watch_data_source_directory(directory_path, callback);
+    }
+    else {
+        io_logging->log_error("Filesystem interface is not available.");
+    }
+}
+
+IO_API_EXPORT void remove_directory_watch(io_filesystem_on_file_changed_function callback) {
+    if (io_filesystem != nullptr) {
+        io_filesystem->remove_directory_watch(callback);
+    }
+    else {
+        io_logging->log_error("Filesystem interface is not available.");
+    }
+}

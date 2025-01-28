@@ -482,10 +482,68 @@ namespace IOLITE_Library
         Alpha                 // io_ui_style_var_alpha
     }
 
-    public class Class1
+    // Provides access to the filesystem
+    public static class FileSystem
     {
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        private static extern bool load_file_from_data_source(
+            [MarshalAs(UnmanagedType.LPStr)] string filepath,
+            out IntPtr data,
+            out uint dataLength);
 
-        // Provides access to the logging subsystem
+        public static bool LoadFileFromDataSource(string filepath, out byte[] data)
+        {
+            data = null;
+            IntPtr dataPtr;
+            uint dataLength;
+
+            bool result = load_file_from_data_source(filepath, out dataPtr, out dataLength);
+
+            if (result && dataLength > 0 && dataPtr != IntPtr.Zero)
+            {
+                data = new byte[dataLength];
+                Marshal.Copy(dataPtr, data, 0, (int)dataLength);
+                // Free the unmanaged memory if necessary
+                // Marshal.FreeHGlobal(dataPtr); // Uncomment if the unmanaged memory needs to be freed
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        private static extern bool create_or_retrieve_user_directory(
+            [MarshalAs(UnmanagedType.LPStr)] string subdirectory,
+            [MarshalAs(UnmanagedType.LPStr)] out IntPtr directoryPath);
+
+        public static bool CreateOrRetrieveUserDirectory(string subdirectory, out string directoryPath)
+        {
+            directoryPath = null;
+            IntPtr pathPtr;
+
+            bool result = create_or_retrieve_user_directory(subdirectory, out pathPtr);
+
+            if (result && pathPtr != IntPtr.Zero)
+            {
+                directoryPath = Marshal.PtrToStringAnsi(pathPtr);
+                // Free the unmanaged string if necessary
+                // Marshal.FreeHGlobal(pathPtr); // Uncomment if the unmanaged memory needs to be freed
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+
+    // Provides access to the logging subsystem
+    public static class Logging
+    {
         [DllImport("iolite_api.dll")]
         public static extern void log_warning(string msg);
 
@@ -494,8 +552,11 @@ namespace IOLITE_Library
 
         [DllImport("iolite_api.dll")]
         public static extern void log_info(string msg);
+    }
 
-        // Provides access to the editor
+    // Provides access to the editor
+    public static class Editor
+    {
         [DllImport("iolite_api.dll")]
         public static extern void select_node(io_ref_t node);
 
@@ -504,8 +565,11 @@ namespace IOLITE_Library
 
         [DllImport("iolite_api.dll")]
         public static extern io_ref_t get_first_selected_entity();
+    }
 
-        // Provides access to the world subsystem
+    // Provides access to the world subsystem
+    public static class World
+    {
         [DllImport("iolite_api.dll")]
         public static extern io_ref_t get_root_node();
 
@@ -523,8 +587,11 @@ namespace IOLITE_Library
 
         [DllImport("iolite_api.dll")]
         public static extern float get_current_time_factor();
+    }
 
-        // Provides access to node components
+    // Provides access to node components
+    public static class Node
+    {
         [DllImport("iolite_api.dll")]
         public static extern io_ref_t get_node_for_entity(io_ref_t entity);
 
@@ -532,7 +599,7 @@ namespace IOLITE_Library
         public static extern io_ref_t create_node(string name);
 
         [DllImport("iolite_api.dll")]
-        public static extern io_ref_t create_node_with_parent(string name,  io_ref_t parent, bool ignore_parent);
+        public static extern io_ref_t create_node_with_parent(string name, io_ref_t parent, bool ignore_parent);
 
         [DllImport("iolite_api.dll")]
         public static extern void attach_node(io_ref_t parent, io_ref_t child, bool ignore_parent);
@@ -609,161 +676,105 @@ namespace IOLITE_Library
         [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void update_transforms_jobified([MarshalAs(UnmanagedType.LPArray)] io_ref_t[] nodes);
 
+        // Managed wrappers for intersect functions
         [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void intersect_point(
+        private static extern void intersect_point(
             io_vec3_t point,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] io_ref_t[] nodes,
             ulong nodes_length,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)] io_ref_t[] intersecting_nodes,
             ref ulong intersecting_nodes_length,
-            bool use_global_bounds
-        );
+            bool use_global_bounds);
 
-        public static io_ref_t[] CallIntersectPoint(
-            io_vec3_t point,
-            io_ref_t[] nodes,
-            bool useGlobalBounds)
-            {
-                // Validate input
-                if (nodes == null || nodes.Length == 0)
-                {
-                    throw new ArgumentException("The nodes array must not be null or empty.");
-                }
+        public static io_ref_t[] IntersectPoint(io_vec3_t point, io_ref_t[] nodes, bool useGlobalBounds)
+        {
+            ulong intersectingNodesLength = (ulong)nodes.Length;
+            io_ref_t[] intersectingNodes = new io_ref_t[nodes.Length];
 
-                // Prepare the output buffer with a size equal to the input nodes array
-                ulong intersectingNodesLength = (ulong)nodes.Length; // Maximum possible size
-                io_ref_t[] intersectingNodes = new io_ref_t[nodes.Length];
+            intersect_point(point, nodes, (ulong)nodes.Length, intersectingNodes, ref intersectingNodesLength, useGlobalBounds);
 
-                // Call the native function
-                intersect_point(point, nodes, (ulong)nodes.Length, intersectingNodes, ref intersectingNodesLength, useGlobalBounds);
-
-                // Resize the output array to the actual number of intersecting nodes
-                Array.Resize(ref intersectingNodes, (int)intersectingNodesLength);
-
-                // Return the intersecting nodes
-                return intersectingNodes;
-            }
+            Array.Resize(ref intersectingNodes, (int)intersectingNodesLength);
+            return intersectingNodes;
+        }
 
         [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void intersect_aabb(
+        private static extern void intersect_aabb(
             io_aabb_t aabb,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] io_ref_t[] nodes,
             ulong nodes_length,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)] io_ref_t[] intersecting_nodes,
             ref ulong intersecting_nodes_length,
-            bool use_global_bounds
-        );
+            bool use_global_bounds);
 
-        public static io_ref_t[] CallIntersectAABB(
-            io_aabb_t aabb,
-            io_ref_t[] nodes,
-            bool useGlobalBounds){
-                if (nodes == null || nodes.Length == 0)
-                {
-                    throw new ArgumentException("The nodes array must not be null or empty.");
-                }
+        public static io_ref_t[] IntersectAABB(io_aabb_t aabb, io_ref_t[] nodes, bool useGlobalBounds)
+        {
+            ulong intersectingNodesLength = (ulong)nodes.Length;
+            io_ref_t[] intersectingNodes = new io_ref_t[nodes.Length];
 
-                // Prepare output buffer
-                ulong intersectingNodesLength = (ulong)nodes.Length; // Maximum possible size
-                io_ref_t[] intersectingNodes = new io_ref_t[nodes.Length];
+            intersect_aabb(aabb, nodes, (ulong)nodes.Length, intersectingNodes, ref intersectingNodesLength, useGlobalBounds);
 
-                // Call the native function
-                intersect_aabb(aabb, nodes, (ulong)nodes.Length, intersectingNodes, ref intersectingNodesLength, useGlobalBounds);
-
-                // Resize the output array to match the actual number of intersecting nodes
-                Array.Resize(ref intersectingNodes, (int)intersectingNodesLength);
-
-                return intersectingNodes;
-            }
+            Array.Resize(ref intersectingNodes, (int)intersectingNodesLength);
+            return intersectingNodes;
+        }
 
         [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void intersect_sphere(
+        private static extern void intersect_sphere(
             io_sphere_t sphere,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] io_ref_t[] nodes,
             ulong nodes_length,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)] io_ref_t[] intersecting_nodes,
             ref ulong intersecting_nodes_length,
-            bool use_global_bounds
-        );
+            bool use_global_bounds);
 
-        public static io_ref_t[] CallIntersectSphere(
-            io_sphere_t sphere,
-            io_ref_t[] nodes,
-            bool useGlobalBounds)
-                {
-                    // Validate input
-                    if (nodes == null || nodes.Length == 0)
-                    {
-                        throw new ArgumentException("The nodes array must not be null or empty.");
-                    }
+        public static io_ref_t[] IntersectSphere(io_sphere_t sphere, io_ref_t[] nodes, bool useGlobalBounds)
+        {
+            ulong intersectingNodesLength = (ulong)nodes.Length;
+            io_ref_t[] intersectingNodes = new io_ref_t[nodes.Length];
 
-                    // Prepare the output buffer with a size equal to the input nodes array
-                    ulong intersectingNodesLength = (ulong)nodes.Length; // Maximum possible size
-                    io_ref_t[] intersectingNodes = new io_ref_t[nodes.Length];
+            intersect_sphere(sphere, nodes, (ulong)nodes.Length, intersectingNodes, ref intersectingNodesLength, useGlobalBounds);
 
-                    // Call the native function
-                    intersect_sphere(sphere, nodes, (ulong)nodes.Length, intersectingNodes, ref intersectingNodesLength, useGlobalBounds);
+            Array.Resize(ref intersectingNodes, (int)intersectingNodesLength);
+            return intersectingNodes;
+        }
+    }
 
-                    // Resize the output array to the actual number of intersecting nodes
-                    Array.Resize(ref intersectingNodes, (int)intersectingNodesLength);
-
-                    // Return the intersecting nodes
-                    return intersectingNodes;
-                }
-
-        // Provides access to tag components
+    // Provides access to tag components
+    public static class Tag
+    {
         [DllImport("iolite_api.dll")]
         public static extern io_ref_t component_tag_for_entity(io_ref_t entity);
 
         [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void find_entities_with_tag(
+        private static extern void find_entities_with_tag(
             string tag,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] io_ref_t[] entities,
-            ref ulong entities_length
-        );
+            ref ulong entities_length);
 
-        public static io_ref_t[] CallFindEntitiesWithTag(string tag)
+        public static io_ref_t[] FindEntitiesWithTag(string tag)
         {
-            // Validate input
-            if (string.IsNullOrWhiteSpace(tag))
-            {
-                throw new ArgumentException("The tag must not be null or empty.");
-            }
-
-            // Prepare the output buffer with a large initial size
-            ulong entitiesLength = 1024; // Start with a reasonably large size
+            ulong entitiesLength = 1024;
             io_ref_t[] entities = new io_ref_t[entitiesLength];
 
-            // Call the native function
             find_entities_with_tag(tag, entities, ref entitiesLength);
 
-            // Resize the output array to match the actual number of entities found
             Array.Resize(ref entities, (int)entitiesLength);
-
-            // Return the entities
             return entities;
         }
 
         [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void get_tags(
-            io_ref_t tag,
+        private static extern void get_tags(
+            io_ref_t tagComponent,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] io_name_t[] tags,
-            ref ulong tags_length
-        );
+            ref ulong tags_length);
 
-        public static io_name_t[] CallGetTags(io_ref_t tag)
+        public static io_name_t[] GetTags(io_ref_t tagComponent)
         {
-            // Prepare the output buffer with a large initial size
-            ulong tagsLength = 1024;  // Start with a reasonably large size
+            ulong tagsLength = 1024;
             io_name_t[] tags = new io_name_t[tagsLength];
 
-            // Call the native function
-            get_tags(tag, tags, ref tagsLength);
+            get_tags(tagComponent, tags, ref tagsLength);
 
-            // Resize the output array to match the actual number of tags
             Array.Resize(ref tags, (int)tagsLength);
-
-            // Return the tags
             return tags;
         }
 
@@ -772,8 +783,11 @@ namespace IOLITE_Library
 
         [DllImport("iolite_api.dll")]
         public static extern void remove_tag(io_ref_t entity, string tag);
+    }
 
-        // Provides access to the entity component
+    // Provides access to the entity component
+    public static class Entity
+    {
         [DllImport("iolite_api.dll")]
         public static extern io_ref_type_id_t get_entity_type_id();
 
@@ -781,7 +795,7 @@ namespace IOLITE_Library
         public static extern bool is_alive(io_ref_t entity);
 
         [DllImport("iolite_api.dll", CallingConvention = CallingConvention.StdCall)]
-        public static extern IntPtr get_name(io_ref_t entity);
+        private static extern IntPtr get_name(io_ref_t entity);
 
         public static string GetName(io_ref_t entity)
         {
@@ -799,69 +813,48 @@ namespace IOLITE_Library
         public static extern io_ref_t find_entity_with_uuid(io_uuid_t uuid);
 
         [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void find_entities_with_name(
+        private static extern void find_entities_with_name(
             string name,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] io_ref_t[] entities,
-            ref ulong entities_length
-        );
+            ref ulong entities_length);
 
-        public static io_ref_t[] CallFindEntitiesWithName(string name)
+        public static io_ref_t[] FindEntitiesWithName(string name)
         {
-            // Validate input
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("The name cannot be null or empty.");
-            }
-
-            // Prepare the output buffer with a large initial size
-            ulong entitiesLength = 1024;  // Start with a reasonably large size
+            ulong entitiesLength = 1024;
             io_ref_t[] entities = new io_ref_t[entitiesLength];
 
-            // Call the native function
             find_entities_with_name(name, entities, ref entitiesLength);
 
-            // Resize the output array to match the actual number of entities found
             Array.Resize(ref entities, (int)entitiesLength);
-
-            // Return the entities
             return entities;
         }
 
         [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void find_entities_with_component(
+        private static extern void find_entities_with_component(
             string componentTypeName,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] io_ref_t[] entities,
-            ref ulong entities_length
-        );
+            ref ulong entities_length);
 
-        public static io_ref_t[] CallFindEntitiesWithComponent(string componentTypeName)
+        public static io_ref_t[] FindEntitiesWithComponent(string componentTypeName)
         {
-            // Validate input
-            if (string.IsNullOrWhiteSpace(componentTypeName))
-            {
-                throw new ArgumentException("The component type name cannot be null or empty.");
-            }
-
-            // Prepare the output buffer with a large initial size
-            ulong entitiesLength = 1024;  // Start with a reasonably large size
+            ulong entitiesLength = 1024;
             io_ref_t[] entities = new io_ref_t[entitiesLength];
 
-            // Call the native function
             find_entities_with_component(componentTypeName, entities, ref entitiesLength);
 
-            // Resize the output array to match the actual number of entities found
             Array.Resize(ref entities, (int)entitiesLength);
-
-            // Return the entities
             return entities;
         }
+    }
 
-        // Provides access to the input system
+    // Provides access to the input system
+    public static class Input
+    {
         [DllImport("iolite_api.dll")]
         public static extern io_input_key_state get_key_state(io_input_key key);
 
         [DllImport("iolite_api.dll")]
-        puvlic static extern float get_axis_state(io_input_axis axis);
+        public static extern float get_axis_state(io_input_axis axis);
 
         [DllImport("iolite_api.dll")]
         public static extern io_vec2_t get_mouse_pos();
@@ -870,20 +863,20 @@ namespace IOLITE_Library
         public static extern io_vec2_t get_mouse_pos_viewport();
 
         [DllImport("iolite_api.dll")]
-        public static extern io_vec2_t get_moise_pos_relative();
+        public static extern io_vec2_t get_mouse_pos_relative();
 
         [DllImport("iolite_api.dll")]
         public static extern void request_mouse_cursor();
+    }
 
-        // Provides access to the animation system
+    // Provides access to the animation system
+    public static class Animation
+    {
         [DllImport("iolite_api.dll")]
         public static extern void play_animation(io_ref_t node, io_animation_system_animation_desc_t desc);
 
         [DllImport("iolite_api.dll")]
         public static extern void stop_animation(io_ref_t node, string animation_name);
-
-        [DllImport("iolite_api.dll")]
-        public static extern void stop_all_animations(io_ref_t node);
 
         [DllImport("iolite_api.dll")]
         public static extern void stop_all_animations(io_ref_t node);
@@ -917,18 +910,24 @@ namespace IOLITE_Library
 
         [DllImport("iolite_api.dll")]
         public static extern void set_timeline_position(io_handle64_t instance, float position);
+    }
 
-        // Provides access to the physics system
+    // Provides access to the physics system
+    public static class Physics
+    {
         [DllImport("iolite_api.dll")]
         public static extern io_physics_overlap_result_t overlap_sphere(io_vec3_t position, float radius, int group_mask);
 
         [DllImport("iolite_api.dll")]
-        public static extern io_physics_raycast_result_t sweep_sphere(io_vec3_t positon, float radius, io_vec3_t direction, float distance, int group_mask);
+        public static extern io_physics_raycast_result_t sweep_sphere(io_vec3_t position, float radius, io_vec3_t direction, float distance, int group_mask);
 
         [DllImport("iolite_api.dll")]
         public static extern io_physics_raycast_result_t raycast(io_vec3_t origin, io_vec3_t direction, float distance, int group_mask);
+    }
 
-        // Provides access to the UI system
+    // Provides access to the UI system
+    public static class UI
+    {
         [DllImport("iolite_api.dll")]
         public static extern void draw_rect(io_vec4_t color);
 
@@ -988,34 +987,38 @@ namespace IOLITE_Library
 
         [DllImport("iolite_api.dll")]
         public static extern bool intersects(io_vec2_t position);
+    }
 
+    // Main class using the organized API functions
+    public class Class1
+    {
         public static int Run(IntPtr arg, int argLength)
         {
-            log_warning($"Hello from .NET!");
-            return 0;  // Return an integer as expected by the delegate signature
+            Logging.log_warning("Hello from .NET!");
+            return 0;
         }
 
         public static void On_Activate()
         {
-            log_warning("On_Activate");
+            Logging.log_warning("On_Activate");
         }
 
-        public delegate void On_Tick_Delegate(float delta_t);
-        public static void On_Tick(float delta_t){
-            log_warning("On_Tick");
+        public static void On_Tick(float delta_t)
+        {
+            Logging.log_warning("On_Tick");
 
-            //move node named "deer" to the right
-            io_ref_t deer = find_first_entity_with_name("deer");
+            // Move node named "deer" to the right
+            io_ref_t deer = Entity.find_first_entity_with_name("deer");
 
-            log_warning(deer.id.ToString() + deer.type.ToString());
+            Logging.log_warning(deer.id.ToString() + deer.type.ToString());
 
-            log_info(GetName(deer));
-            io_ref_t node = get_node_for_entity(deer);
+            Logging.log_info(Entity.GetName(deer));
+            io_ref_t node = Node.get_node_for_entity(deer);
 
-            io_vec3_t pos = get_node_world_position(node);
+            io_vec3_t pos = Node.get_node_world_position(node);
 
             pos.x += 0.1f;
-            set_node_world_position(node, pos);
+            Node.set_node_world_position(node, pos);
         }
     }
-}
+

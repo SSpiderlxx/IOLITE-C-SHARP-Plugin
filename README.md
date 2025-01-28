@@ -2,6 +2,20 @@ Iolite C-Sharp Plugin
 =====================
 The Iolite c# plugin is an ongoing project, which is still currently underdevelopment. It is designed to allow you to seamlessly access the iolite api use C#, it aims to allow users to interact with the API without having to understand C++. 
 
+How it works
+-------------
+It currently works the same as mono game, where all code must be triggered by the main loop. This may change in the future, however the main focus as of now is getting most of the api accessable through C#.
+
+How to setup
+-------------
+- Build the dotnethost.dll and iolite_api.dll using CMAKE.
+- Place the two dll files inside the root folder of your Iolite project.
+- Include both dll's as a plugin ( IOLITE_API.DLL should be initalized before the DOTNETHOST.DLL)
+- Using thet iolite_libary .net 8 project write your code and when finished build the donet project as a dll and place it into the root folder of your iolite project.
+
+
+Progress
+------------
 
 | API Name                            | Supported       |
 |-------------------------------------|-----------------|

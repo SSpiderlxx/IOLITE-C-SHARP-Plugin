@@ -25,10 +25,10 @@ static const io_input_system_i* io_input_system = nullptr;
 static const io_animation_system_i* io_animation_system = nullptr;
 // Declare io_physics interface
 static const io_physics_i* io_physics = nullptr;
-// Declare io_custom_event_streams interface
-static const io_custom_event_streams_i* io_custom_event_streams = nullptr;
 // Delcare io_ui interface
 static const io_ui_i* io_ui = nullptr;
+// Declare Filesystem interface
+static const io_filesystem_i* io_filesystem = nullptr;
 
 IO_API_EXPORT io_uint32_t IO_API_CALL get_api_version()
 {
@@ -59,10 +59,10 @@ IO_API_EXPORT io_int32_t IO_API_CALL load_plugin(const void* api_manager)
 	io_animation_system = (const io_animation_system_i*)io_api_manager->find_first(IO_ANIMATION_SYSTEM_API_NAME);
 	// Retrieve the physics interface
 	io_physics = (const io_physics_i*)io_api_manager->find_first(IO_PHYSICS_API_NAME);
-	// Retrieve the custom event streams interface
-	io_custom_event_streams = (const io_custom_event_streams_i*)io_api_manager->find_first(IO_CUSTOM_EVENT_STREAMS_API_NAME);
 	// Retrieve the ui interface
 	io_ui = (const io_ui_i*)io_api_manager->find_first(IO_UI_API_NAME);
+	// Retrieve the filesystem interface
+	io_filesystem = (const io_filesystem_i*)io_api_manager->find_first(IO_FILESYSTEM_API_NAME);
 
     return 0;
 }
@@ -669,3 +669,14 @@ IO_API_EXPORT void pop_font_size() {
 IO_API_EXPORT io_bool_t intersects(io_vec2_t position) {
 	return io_ui->intersects(position);
 }
+
+// Provides access to the filesystem
+IO_API_EXPORT io_bool_t load_file_from_data_source(const char* filepath, io_uint8_t* buffer, io_size_t* buffer_length) {
+	return io_filesystem->load_file_from_data_source(filepath, buffer, buffer_length);
+}
+
+IO_API_EXPORT void create_or_retrieve_user_directory(const char* subdirectory, char* buffer, io_size_t* buffer_length) {
+	io_filesystem->create_or_retrieve_user_directory(subdirectory, buffer, buffer_length);
+}
+
+

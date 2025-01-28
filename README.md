@@ -2,7 +2,6 @@ Iolite C-Sharp Plugin
 =====================
 The Iolite c# plugin is an ongoing project, which is still currently underdevelopment. It is designed to allow you to seamlessly access the iolite api use C#, it aims to allow users to interact with the API without having to understand C++. 
 
-Here's a table with all the APIs listed (✓) or crosses (✗) as needed.
 
 | API Name                            | Supported       |
 |-------------------------------------|-----------------|

@@ -1070,6 +1070,9 @@ namespace IOLITE_Library
     // Provides access to custom data components
     public static class CustomDataComponent
     {
+        [DllImport("iolite_api.dll")]
+        public static extern io_ref_t get_custom_data_component_for_entity(io_ref_t entity);
+
         [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern io_variant_t get_custom_data(io_ref_t custom_data, ulong index);
 

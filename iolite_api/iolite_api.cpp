@@ -995,6 +995,16 @@ IO_API_EXPORT void draw_debug_geometry(io_handle16_t path_handle, io_bool_t alwa
 }
 // Provides access to custom data components
 
+IO_API_EXPORT io_ref_t get_custom_data_component_for_entity(io_ref_t entity) {
+	if (io_component_custom_data != nullptr) {
+		return io_component_custom_data->base.get_component_for_entity(entity);
+	}
+	else {
+		io_logging->log_error("Custom data component interface is not available.");
+		return { 0 };
+	}
+}
+
 IO_API_EXPORT io_variant_t get_custom_data(io_ref_t custom_data, io_size_t index) {
     if (io_component_custom_data != nullptr) {
         return io_component_custom_data->get(custom_data, index);

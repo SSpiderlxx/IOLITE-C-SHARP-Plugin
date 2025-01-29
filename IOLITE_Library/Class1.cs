@@ -482,6 +482,18 @@ namespace IOLITE_Library
         Alpha                 // io_ui_style_var_alpha
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct io_pathfinding_path_settings_t
+    {
+        public uint find_walkable_cell_range;
+        public float capsule_radius;
+        public float capsule_half_height;
+        public float step_height;
+        public float cell_size;
+        public uint num_max_steps;
+        public uint group_mask;
+    }
+
     // Provides access to the filesystem
     public static class FileSystem
     {
@@ -1014,6 +1026,37 @@ namespace IOLITE_Library
             Marshal.Copy(spectrumPtr, spectrum, 0, (int)spectrumLength);
             return spectrum;
         }
+    }
+
+    // Provides access to the pathfinding system
+    public static class Pathfinding
+    {
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern io_handle16_t find_path(io_vec3_t start, io_vec3_t end, ref io_pathfinding_path_settings_t settings);
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool is_valid(io_handle16_t path_handle);
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void reset_path(io_handle16_t path_handle);
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void destroy_path(io_handle16_t path_handle);
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool is_path_found(io_handle16_t path_handle);
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool get_next_position_on_path(io_handle16_t path_handle, out io_vec3_t next_position);
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void draw_path(io_handle16_t path_handle, io_vec4_t color, [MarshalAs(UnmanagedType.I1)] bool always_in_front);
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void draw_debug_geometry(io_handle16_t path_handle, [MarshalAs(UnmanagedType.I1)] bool always_in_front);
     }
 
     // Main class using the organized API functions

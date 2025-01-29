@@ -30,6 +30,8 @@ static const io_physics_i* io_physics = nullptr;
 static const io_ui_i* io_ui = nullptr;
 // Declare Filesystem interface
 static const io_filesystem_i* io_filesystem = nullptr;
+// Declare pathfinding interface
+static const io_pathfinding_i* io_pathfinding = nullptr;
 // Sound interface
 static const io_sound_i* io_sound = nullptr;
 
@@ -68,7 +70,9 @@ IO_API_EXPORT io_int32_t IO_API_CALL load_plugin(const void* api_manager)
 	io_filesystem = (const io_filesystem_i*)io_api_manager->find_first(IO_FILESYSTEM_API_NAME);
 	// Retrieve the sound interface
 	io_sound = (const io_sound_i*)io_api_manager->find_first(IO_SOUND_API_NAME);
-
+	// Retrieve the pathfinding interface
+	io_pathfinding = (const io_pathfinding_i*)io_api_manager->find_first(IO_PATHFINDING_API_NAME);
+   
     return 0;
 }
 
@@ -906,4 +910,83 @@ IO_API_EXPORT void get_audio_spectrum(std::vector<io_float32_t>& spectrum) {
         spectrum.clear();
     }
 }
+
+// Provides access to the pathfinding system
+
+IO_API_EXPORT io_handle16_t find_path(io_vec3_t start, io_vec3_t end, const io_pathfinding_path_settings_t* settings) {
+    if (io_pathfinding != nullptr) {
+        return io_pathfinding->find_path(start, end, settings);
+    }
+    else {
+        io_logging->log_error("Pathfinding interface is not available.");
+        return io_handle16_t{ 0 };
+    }
+}
+
+IO_API_EXPORT io_bool_t is_valid(io_handle16_t path_handle) {
+    if (io_pathfinding != nullptr) {
+        return io_pathfinding->is_valid(path_handle);
+    }
+    else {
+        io_logging->log_error("Pathfinding interface is not available.");
+        return IO_FALSE;
+    }
+}
+
+IO_API_EXPORT void reset_path(io_handle16_t path_handle) {
+    if (io_pathfinding != nullptr) {
+        io_pathfinding->reset_path(path_handle);
+    }
+    else {
+        io_logging->log_error("Pathfinding interface is not available.");
+    }
+}
+
+IO_API_EXPORT void destroy_path(io_handle16_t path_handle) {
+    if (io_pathfinding != nullptr) {
+        io_pathfinding->destroy_path(path_handle);
+    }
+    else {
+        io_logging->log_error("Pathfinding interface is not available.");
+    }
+}
+
+IO_API_EXPORT io_bool_t is_path_found(io_handle16_t path_handle) {
+    if (io_pathfinding != nullptr) {
+        return io_pathfinding->is_path_found(path_handle);
+    }
+    else {
+        io_logging->log_error("Pathfinding interface is not available.");
+        return IO_FALSE;
+    }
+}
+
+IO_API_EXPORT io_bool_t get_next_position_on_path(io_handle16_t path_handle, io_vec3_t* next_position) {
+    if (io_pathfinding != nullptr) {
+        return io_pathfinding->get_next_position_on_path(path_handle, next_position);
+    }
+    else {
+        io_logging->log_error("Pathfinding interface is not available.");
+        return IO_FALSE;
+    }
+}
+
+IO_API_EXPORT void draw_path(io_handle16_t path_handle, io_vec4_t color, io_bool_t always_in_front) {
+    if (io_pathfinding != nullptr) {
+        io_pathfinding->draw_path(path_handle, color, always_in_front);
+    }
+    else {
+        io_logging->log_error("Pathfinding interface is not available.");
+    }
+}
+
+IO_API_EXPORT void draw_debug_geometry(io_handle16_t path_handle, io_bool_t always_in_front) {
+    if (io_pathfinding != nullptr) {
+        io_pathfinding->draw_debug_geometry(path_handle, always_in_front);
+    }
+    else {
+        io_logging->log_error("Pathfinding interface is not available.");
+    }
+}
+
 

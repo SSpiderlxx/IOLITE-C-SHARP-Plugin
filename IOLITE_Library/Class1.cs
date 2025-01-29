@@ -218,6 +218,14 @@ namespace IOLITE_Library
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct io_variant_t
+    {
+        public io_name_t type;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public uint[] data;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct io_animation_system_animation_desc_t
     {
         public string animation_name;
@@ -1057,6 +1065,22 @@ namespace IOLITE_Library
 
         [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void draw_debug_geometry(io_handle16_t path_handle, [MarshalAs(UnmanagedType.I1)] bool always_in_front);
+    }
+
+    // Provides access to custom data components
+    public static class CustomDataComponent
+    {
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern io_variant_t get_custom_data(io_ref_t custom_data, ulong index);
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void set_custom_data(io_ref_t custom_data, ulong index, io_variant_t value);
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void add_custom_data(io_ref_t custom_data, io_variant_t value);
+
+        [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void remove_custom_data(io_ref_t custom_data, ulong index);
     }
 
     // Main class using the organized API functions

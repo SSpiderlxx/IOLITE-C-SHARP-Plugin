@@ -34,6 +34,8 @@ static const io_filesystem_i* io_filesystem = nullptr;
 static const io_pathfinding_i* io_pathfinding = nullptr;
 // Sound interface
 static const io_sound_i* io_sound = nullptr;
+// Declare custom data component interface
+static const io_component_custom_data_i* io_component_custom_data = nullptr;
 
 IO_API_EXPORT io_uint32_t IO_API_CALL get_api_version()
 {
@@ -72,7 +74,10 @@ IO_API_EXPORT io_int32_t IO_API_CALL load_plugin(const void* api_manager)
 	io_sound = (const io_sound_i*)io_api_manager->find_first(IO_SOUND_API_NAME);
 	// Retrieve the pathfinding interface
 	io_pathfinding = (const io_pathfinding_i*)io_api_manager->find_first(IO_PATHFINDING_API_NAME);
-   
+	// Retrieve the custom data component interface
+	io_component_custom_data = (const io_component_custom_data_i*)io_api_manager->find_first(IO_COMPONENT_CUSTOM_DATA_API_NAME);
+
+
     return 0;
 }
 
@@ -986,6 +991,46 @@ IO_API_EXPORT void draw_debug_geometry(io_handle16_t path_handle, io_bool_t alwa
     }
     else {
         io_logging->log_error("Pathfinding interface is not available.");
+    }
+}
+// Provides access to custom data components
+
+IO_API_EXPORT io_variant_t get_custom_data(io_ref_t custom_data, io_size_t index) {
+    if (io_component_custom_data != nullptr) {
+        return io_component_custom_data->get(custom_data, index);
+    }
+    else {
+        io_logging->log_error("Custom data component interface is not available.");
+        io_variant_t v;
+        v.type.hash = 0;
+        return v;
+    }
+}
+
+IO_API_EXPORT void set_custom_data(io_ref_t custom_data, io_size_t index, io_variant_t value) {
+    if (io_component_custom_data != nullptr) {
+        io_component_custom_data->set(custom_data, index, value);
+    }
+    else {
+        io_logging->log_error("Custom data component interface is not available.");
+    }
+}
+
+IO_API_EXPORT void add_custom_data(io_ref_t custom_data, io_variant_t value) {
+    if (io_component_custom_data != nullptr) {
+        io_component_custom_data->add(custom_data, value);
+    }
+    else {
+        io_logging->log_error("Custom data component interface is not available.");
+    }
+}
+
+IO_API_EXPORT void remove_custom_data(io_ref_t custom_data, io_size_t index) {
+    if (io_component_custom_data != nullptr) {
+        io_component_custom_data->remove(custom_data, index);
+    }
+    else {
+        io_logging->log_error("Custom data component interface is not available.");
     }
 }
 

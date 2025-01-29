@@ -1,5 +1,6 @@
 #include "inc/iolite_api.h"
 #include "vector"
+#include <string>
 
 using namespace std;
 
@@ -591,87 +592,190 @@ IO_API_EXPORT io_physics_raycast_result_t raycast(io_vec3_t origin, io_vec3_t di
 
 // Provides access to the ui system
 IO_API_EXPORT void draw_rect(io_vec4_t color) {
-	io_ui->draw_rect(color);
+    if (io_ui != nullptr) {
+        io_ui->draw_rect(color);
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT void draw_circle(io_vec4_t color) {
-	io_ui->draw_circle(color);
+    if (io_ui != nullptr) {
+        io_ui->draw_circle(color);
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT void draw_ngon(io_vec4_t color, io_uint32_t sides) {
-	io_ui->draw_ngon(color, sides);
+    if (io_ui != nullptr) {
+        io_ui->draw_ngon(color, sides);
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT void draw_image(const char* name, io_vec4_t tint) {
-	io_ui->draw_image(name, tint);
+    if (io_ui != nullptr) {
+        io_ui->draw_image(name, tint);
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT void draw_text(const char* text, io_ui_text_align_horizontal align_horizontal, io_ui_text_align_vertical align_vertical, io_ui_text_flag flags) {
-	io_ui->draw_text(text, align_horizontal, align_vertical, flags);
+    if (io_ui != nullptr) {
+        io_ui->draw_text(text, align_horizontal, align_vertical, flags);
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT io_ui_rect_t calc_text_bounds(const char* text, io_ui_text_align_horizontal align_horizontal, io_ui_text_align_vertical align_vertical, io_ui_text_flag flags) {
-	return io_ui->calc_text_bounds(text, align_horizontal, align_vertical, flags);
+    if (io_ui != nullptr) {
+        return io_ui->calc_text_bounds(text, align_horizontal, align_vertical, flags);
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+        return io_ui_rect_t{}; // Return default-initialized rectangle
+    }
 }
 
 IO_API_EXPORT io_ui_rect_t get_last_text_bounds() {
-	return io_ui->get_last_text_bounds();
+    if (io_ui != nullptr) {
+        return io_ui->get_last_text_bounds();
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+        return io_ui_rect_t{};
+    }
 }
 
 IO_API_EXPORT void push_transform(io_ui_anchor_t left, io_ui_anchor_t right,
     io_ui_anchor_t top, io_ui_anchor_t bottom,
     io_float32_t rotation) {
-	io_ui->push_transform(left, right, top, bottom, rotation);
+    if (io_ui != nullptr) {
+        io_ui->push_transform(left, right, top, bottom, rotation);
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT void push_transform_preset(io_ui_anchor_preset preset,
     io_ui_anchor_offsets_t offsets,
     io_float32_t rotation) {
-	io_ui->push_transform_preset(preset, offsets, rotation);
+    if (io_ui != nullptr) {
+        io_ui->push_transform_preset(preset, offsets, rotation);
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT void pop_transform() {
-	io_ui->pop_transform();
+    if (io_ui != nullptr) {
+        io_ui->pop_transform();
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
-IO_API_EXPORT void push_scale_offset_for_base_size(io_vec2_t base_size, io_ui_aspect_mode aspect_mode){
-	io_ui->push_scale_offset_for_base_size(base_size, aspect_mode);
+IO_API_EXPORT void push_scale_offset_for_base_size(io_vec2_t base_size, io_ui_aspect_mode aspect_mode) {
+    if (io_ui != nullptr) {
+        io_ui->push_scale_offset_for_base_size(base_size, aspect_mode);
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT void push_scale_offset(io_float32_t scale, io_vec2_t offset) {
-	io_ui->push_scale_offset(scale, offset);
+    if (io_ui != nullptr) {
+        io_ui->push_scale_offset(scale, offset);
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT void pop_scale_offset() {
-	io_ui->pop_scale_offset();
+    if (io_ui != nullptr) {
+        io_ui->pop_scale_offset();
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT void push_style_var_float(io_ui_style_var var, io_float32_t value) {
-	io_ui->push_style_var_float(var, value);
+    if (io_ui != nullptr) {
+        io_ui->push_style_var_float(var, value);
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT void push_style_var_vec4(io_ui_style_var var, io_vec4_t value) {
-	io_ui->push_style_var_vec4(var, value);
+    if (io_ui != nullptr) {
+        io_ui->push_style_var_vec4(var, value);
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT void pop_style_var() {
-	io_ui->pop_style_var();
+    if (io_ui != nullptr) {
+        io_ui->pop_style_var();
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT void clip_children() {
-	io_ui->clip_children();
+    if (io_ui != nullptr) {
+        io_ui->clip_children();
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT void push_font_size(io_float32_t size) {
-	io_ui->push_font_size(size);
+    if (io_ui != nullptr) {
+        io_ui->push_font_size(size);
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT void pop_font_size() {
-	io_ui->pop_font_size();
+    if (io_ui != nullptr) {
+        io_ui->pop_font_size();
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+    }
 }
 
 IO_API_EXPORT io_bool_t intersects(io_vec2_t position) {
-	return io_ui->intersects(position);
+    if (io_ui != nullptr) {
+        return io_ui->intersects(position);
+    }
+    else {
+        io_logging->log_error("UI interface is not available.");
+        return IO_FALSE;
+    }
 }
 
 // Provides access to the filesystem

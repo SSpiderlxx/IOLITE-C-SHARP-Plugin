@@ -989,6 +989,33 @@ namespace IOLITE_Library
         public static extern bool intersects(io_vec2_t position);
     }
 
+    // Provides access to the sound system
+    public static class Sound
+    {
+        [DllImport("iolite_api.dll")]
+        public static extern io_handle64_t play_sound_effect(string effect_name);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void stop_sound_effect(io_handle64_t effect_handle);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void set_sound_position(io_handle64_t effect_handle, io_vec3_t position);
+
+        [DllImport("iolite_api.dll")]
+        private static extern void get_audio_spectrum(out IntPtr spectrumData, out uint spectrumLength);
+
+        public static float[] GetAudioSpectrum()
+        {
+            get_audio_spectrum(out IntPtr spectrumPtr, out uint spectrumLength);
+            if (spectrumLength == 0 || spectrumPtr == IntPtr.Zero)
+                return new float[0];
+
+            float[] spectrum = new float[spectrumLength];
+            Marshal.Copy(spectrumPtr, spectrum, 0, (int)spectrumLength);
+            return spectrum;
+        }
+    }
+
     // Main class using the organized API functions
     public class Class1
     {

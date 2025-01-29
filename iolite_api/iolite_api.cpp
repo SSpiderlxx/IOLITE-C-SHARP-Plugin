@@ -29,6 +29,8 @@ static const io_physics_i* io_physics = nullptr;
 static const io_ui_i* io_ui = nullptr;
 // Declare Filesystem interface
 static const io_filesystem_i* io_filesystem = nullptr;
+// Sound interface
+static const io_sound_i* io_sound = nullptr;
 
 IO_API_EXPORT io_uint32_t IO_API_CALL get_api_version()
 {
@@ -63,6 +65,8 @@ IO_API_EXPORT io_int32_t IO_API_CALL load_plugin(const void* api_manager)
 	io_ui = (const io_ui_i*)io_api_manager->find_first(IO_UI_API_NAME);
 	// Retrieve the filesystem interface
 	io_filesystem = (const io_filesystem_i*)io_api_manager->find_first(IO_FILESYSTEM_API_NAME);
+	// Retrieve the sound interface
+	io_sound = (const io_sound_i*)io_api_manager->find_first(IO_SOUND_API_NAME);
 
     return 0;
 }
@@ -749,3 +753,53 @@ IO_API_EXPORT void remove_directory_watch(io_filesystem_on_file_changed_function
         io_logging->log_error("Filesystem interface is not available.");
     }
 }
+
+// Provides access to the sound system
+
+IO_API_EXPORT io_handle64_t play_sound_effect(const char* effect_name) {
+    if (io_sound != nullptr) {
+        return io_sound->play_sound_effect(effect_name);
+    }
+    else {
+        io_logging->log_error("Sound interface is not available.");
+        return { 0 };
+    }
+}
+
+IO_API_EXPORT void stop_sound_effect(io_handle64_t effect_handle) {
+    if (io_sound != nullptr) {
+        io_sound->stop_sound_effect(effect_handle);
+    }
+    else {
+        io_logging->log_error("Sound interface is not available.");
+    }
+}
+
+IO_API_EXPORT void set_sound_position(io_handle64_t effect_handle, io_vec3_t position) {
+    if (io_sound != nullptr) {
+        io_sound->set_position(effect_handle, position);
+    }
+    else {
+        io_logging->log_error("Sound interface is not available.");
+    }
+}
+
+IO_API_EXPORT void get_audio_spectrum(std::vector<io_float32_t>& spectrum) {
+    if (io_sound != nullptr) {
+        const io_float32_t* spectrum_data = nullptr;
+        io_size_t spectrum_length = 0;
+        io_sound->get_spectrum(&spectrum_data, &spectrum_length);
+        if (spectrum_length > 0 && spectrum_data != nullptr) {
+            spectrum.assign(spectrum_data, spectrum_data + spectrum_length);
+        }
+        else {
+            io_logging->log_error("Failed to retrieve audio spectrum.");
+            spectrum.clear();
+        }
+    }
+    else {
+        io_logging->log_error("Sound interface is not available.");
+        spectrum.clear();
+    }
+}
+

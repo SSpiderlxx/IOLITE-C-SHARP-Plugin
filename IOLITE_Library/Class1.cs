@@ -1115,6 +1115,17 @@ namespace IOLITE_Library
         public static extern io_vec3_t get_foot_position(io_ref_t controller);
     }
 
+    // Provides access to the flipbook animation system
+    public static class FlipbookAnimation
+    {
+        [DllImport("iolite_api.dll")]
+        public static extern io_ref_t get_flipbook_for_entity(io_ref_t entity);
+        [DllImport("iolite_api.dll")]
+        public static extern void play_flipbook(io_ref_t node);
+        [DllImport("iolite_api.dll")]
+        public static extern void stop_flipbook(io_ref_t node);
+    }
+
     // Main class using the organized API functions
     public class Class1
     {

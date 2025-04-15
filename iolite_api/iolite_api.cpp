@@ -38,6 +38,8 @@ static const io_sound_i* io_sound = nullptr;
 static const io_component_custom_data_i* io_component_custom_data = nullptr;
 // Decalre character controller interface
 static const io_component_character_controller_i* io_component_character_controller nullptr;
+// Delcare io_component_flipbook_animation interface
+static const io_component_flipbook_animation_i* io_component_flipbook_animation = nullptr;
 
 IO_API_EXPORT io_uint32_t IO_API_CALL get_api_version()
 {
@@ -80,7 +82,8 @@ IO_API_EXPORT io_int32_t IO_API_CALL load_plugin(const void* api_manager)
 	io_component_custom_data = (const io_component_custom_data_i*)io_api_manager->find_first(IO_COMPONENT_CUSTOM_DATA_API_NAME);
     // Retrieve the character controller interface
     io_component_character_controller = (const io_component_character_controller_i*)io_api_manager->find_first(IO_COMPONENT_CHARACTER_CONTROLLER_API_NAME);
-
+	// Retrieve the flipbook animation interface
+	io_component_flipbook_animation = (const io_component_flipbook_animation_i*)io_api_manager->find_first(IO_COMPONENT_FLIPBOOK_ANIMATION_API_NAME);
 
     return 0;
 }
@@ -1071,4 +1074,17 @@ IO_API_EXPORT io_bool_t is_colliding_up(io_ref_t controller) {
 
 IO_API_EXPORT io_vec3_t get_foot_position(io_ref_t controller) {
     return io_component_character_controller->get_foot_position(controller);
+}
+
+// Provides access to the flipbook animation system
+IO_API_EXPORT io_ref_t flipbook_animaiton_for_entity(io_ref_t entity) {
+	return io_component_flipbook_animation->base.get_component_for_entity(entity);
+}
+
+IO_API_EXPORT void play_flipbook(io_ref_t flipbook) {
+	io_component_flipbook_animation->play(flipbook);
+}
+
+IO_API_EXPORT void stop_flipbook(io_ref_t flipbook) {
+	io_component_flipbook_animation->stop(flipbook);
 }

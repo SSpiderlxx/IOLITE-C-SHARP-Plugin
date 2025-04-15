@@ -369,6 +369,14 @@ namespace IOLITE_Library
         public io_ref_t entity;
     }
 
+    public struct io_property_desc_t
+    {
+        public string name;
+        public string type;
+        public byte flags;
+    }
+
+
     [StructLayout(LayoutKind.Sequential)]
     public struct io_physics_raycast_result_t
     {
@@ -1085,7 +1093,7 @@ namespace IOLITE_Library
         [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void remove_custom_data(io_ref_t custom_data, ulong index);
     }
-
+    
     // Main class using the organized API functions
     public class Class1
     {

@@ -1093,7 +1093,28 @@ namespace IOLITE_Library
         [DllImport("iolite_api.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void remove_custom_data(io_ref_t custom_data, ulong index);
     }
-    
+
+    public static class CharacterController
+    {
+        [DllImport("iolite_api.dll")]
+        public static extern io_ref_t character_controller_for_entity(io_ref_t entity);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void move(io_ref_t controller, io_vec3_t move_vector);
+
+        [DllImport("iolite_api.dll")]
+        public static extern bool is_grounded(io_ref_t controller);
+
+        [DllImport("iolite_api.dll")]
+        public static extern bool is_colliding_sides(io_ref_t controller);
+
+        [DllImport("iolite_api.dll")]
+        public static extern is_colliding_up(io_ref_t controller);
+
+        [DllImport("iolite_api.dll")]
+        public static extern io_vec3_t get_foot_position(io_ref_t controller);
+    }
+
     // Main class using the organized API functions
     public class Class1
     {

@@ -36,6 +36,8 @@ static const io_pathfinding_i* io_pathfinding = nullptr;
 static const io_sound_i* io_sound = nullptr;
 // Declare custom data component interface
 static const io_component_custom_data_i* io_component_custom_data = nullptr;
+// Decalre character controller interface
+static const io_component_character_controller_i* io_component_character_controller nullptr;
 
 IO_API_EXPORT io_uint32_t IO_API_CALL get_api_version()
 {
@@ -76,6 +78,8 @@ IO_API_EXPORT io_int32_t IO_API_CALL load_plugin(const void* api_manager)
 	io_pathfinding = (const io_pathfinding_i*)io_api_manager->find_first(IO_PATHFINDING_API_NAME);
 	// Retrieve the custom data component interface
 	io_component_custom_data = (const io_component_custom_data_i*)io_api_manager->find_first(IO_COMPONENT_CUSTOM_DATA_API_NAME);
+    // Retrieve the character controller interface
+    io_component_character_controller = (const io_component_character_controller_i*)io_api_manager->find_first(IO_COMPONENT_CHARACTER_CONTROLLER_API_NAME);
 
 
     return 0;
@@ -1044,3 +1048,27 @@ IO_API_EXPORT void remove_custom_data(io_ref_t custom_data, io_size_t index) {
     }
 }
 
+// Provides access to the character controller system
+IO_API_EXPORT io_ref_t character_controller_for_entity(io_ref_t entity) {
+    io_component_character_controller->base.get_component_for_entity(entity);
+}
+
+IO_API_EXPORT void move(io_ref_t controller, io_vec3_t move_vector) {
+    io_component_character_controller->move(controller, move_vector);
+}
+
+IO_API_EXPORT io_bool_t is_grounded(io_ref_t controller) {
+    return io_component_character_controller->is_grounded(controller);
+}
+
+IO_API_EXPORT io_bool_t is_colliding_sides(io_ref_t controller) {
+    return io_component_character_controller->is_colliding_sides(controller);
+}
+
+IO_API_EXPORT io_bool_t is_colliding_up(io_ref_t controller) {
+    return io_component_character_controller->is_colliding_up(controller);
+}
+
+IO_API_EXPORT io_vec3_t get_foot_position(io_ref_t controller) {
+    return io_component_character_controller->get_foot_position(controller);
+}

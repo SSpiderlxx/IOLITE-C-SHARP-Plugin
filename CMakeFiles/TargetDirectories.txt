@@ -1,0 +1,8 @@
+/home/leon/Documents/Iolite Projects/IOLITE-C-SHARP-Plugin/CMakeFiles/edit_cache.dir
+/home/leon/Documents/Iolite Projects/IOLITE-C-SHARP-Plugin/CMakeFiles/rebuild_cache.dir
+/home/leon/Documents/Iolite Projects/IOLITE-C-SHARP-Plugin/dotnetHost/CMakeFiles/dotnetHost.dir
+/home/leon/Documents/Iolite Projects/IOLITE-C-SHARP-Plugin/dotnetHost/CMakeFiles/edit_cache.dir
+/home/leon/Documents/Iolite Projects/IOLITE-C-SHARP-Plugin/dotnetHost/CMakeFiles/rebuild_cache.dir
+/home/leon/Documents/Iolite Projects/IOLITE-C-SHARP-Plugin/iolite_api/CMakeFiles/iolite_api.dir
+/home/leon/Documents/Iolite Projects/IOLITE-C-SHARP-Plugin/iolite_api/CMakeFiles/edit_cache.dir
+/home/leon/Documents/Iolite Projects/IOLITE-C-SHARP-Plugin/iolite_api/CMakeFiles/rebuild_cache.dir

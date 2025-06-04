@@ -245,14 +245,28 @@ namespace IOLITE_Library
     {
         public ulong Internal { get; set; }
 
-        public IoHandle64(ulong internalValue)
+        public io_handle64_t(ulong internalValue)
         {
             Internal = internalValue;
         }
 
-        public static IoHandle64 Invalid => new IoHandle64(ulong.MaxValue);
+        public static io_handle64_t Invalid => new io_handle64_t(ulong.MaxValue);
 
         public bool IsValid => Internal != ulong.MaxValue;
+    }
+
+    public struct io_handle16_t
+    {
+        public ushort Internal { get; set; }
+
+        public io_handle16_t(ushort internalValue)
+        {
+            Internal = internalValue;
+        }
+
+        public static io_handle16_t Invalid => new io_handle16_t(ushort.MaxValue);
+
+        public bool IsValid => Internal != ushort.MaxValue;
     }
 
     public enum io_input_key_state
@@ -1109,7 +1123,7 @@ namespace IOLITE_Library
         public static extern bool is_colliding_sides(io_ref_t controller);
 
         [DllImport("iolite_api.dll")]
-        public static extern is_colliding_up(io_ref_t controller);
+        public static extern bool is_colliding_up(io_ref_t controller);
 
         [DllImport("iolite_api.dll")]
         public static extern io_vec3_t get_foot_position(io_ref_t controller);
@@ -1158,4 +1172,5 @@ namespace IOLITE_Library
             Node.set_node_world_position(node, pos);
         }
     }
+}
 

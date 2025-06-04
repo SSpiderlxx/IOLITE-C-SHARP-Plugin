@@ -99,7 +99,7 @@ void init() {
     }
 
     // Define the path to the configuration file
-    const char_t* runtime_config_path = L"IOLITE_Library.runtimeconfig.json";  // Ensure the correct path
+    const char_t* runtime_config_path = STR("IOLITE_Library.runtimeconfig.json");  // Ensure the correct path
 
     // Get function pointer for loading the assembly
     load_assembly_and_get_function_pointer_fn load_fn = get_dotnet_load_assembly(runtime_config_path);

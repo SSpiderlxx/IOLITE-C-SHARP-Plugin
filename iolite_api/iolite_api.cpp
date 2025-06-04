@@ -1,6 +1,7 @@
 #include "inc/iolite_api.h"
 #include "vector"
 #include <string>
+#include <cstring>
 
 using namespace std;
 
@@ -37,7 +38,7 @@ static const io_sound_i* io_sound = nullptr;
 // Declare custom data component interface
 static const io_component_custom_data_i* io_component_custom_data = nullptr;
 // Decalre character controller interface
-static const io_component_character_controller_i* io_component_character_controller nullptr;
+static const io_component_character_controller_i* io_component_character_controller = nullptr;
 // Delcare io_component_flipbook_animation interface
 static const io_component_flipbook_animation_i* io_component_flipbook_animation = nullptr;
 

@@ -16,7 +16,21 @@ IO_API_EXPORT io_uint32_t IO_API_CALL get_api_version()
 }
 
 
+#ifndef MAX_PATH
+#ifdef _WIN32
 #define MAX_PATH 260
+#else
+#define MAX_PATH PATH_MAX
+#endif
+#endif
+
+#ifdef _WIN32
+using char_t = wchar_t;
+#define STR(s) L##s
+#else
+using char_t = char;
+#define STR(s) s
+#endif
 
 using string_t = std::basic_string<char_t>;
 
@@ -33,7 +47,7 @@ void* load_library(const char_t* library_path) {
 #ifdef _WIN32
     return LoadLibraryW(library_path); // Windows-specific load
 #else
-    return dlopen(library_path, RTLD_LAZY | RTLD_LOCAL);  // Linux-specific load
+    return dlopen(library_path, RTLD_LAZY | RTLD_LOCAL);  // Linux/macOS-specific load
 #endif
 }
 

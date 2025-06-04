@@ -1058,7 +1058,7 @@ IO_API_EXPORT void remove_custom_data(io_ref_t custom_data, io_size_t index) {
 
 // Provides access to the character controller system
 IO_API_EXPORT io_ref_t character_controller_for_entity(io_ref_t entity) {
-    io_component_character_controller->base.get_component_for_entity(entity);
+    return io_component_character_controller->base.get_component_for_entity(entity);
 }
 
 IO_API_EXPORT void move(io_ref_t controller, io_vec3_t move_vector) {

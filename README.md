@@ -6,6 +6,16 @@ How it works
 -------------
 It currently works the same as mono game, where all code must be triggered by the main loop. This may change in the future, however the main focus as of now is getting most of the api accessable through C#.
 
+How to build for windows on Linux
+----------------------------------
+sudo apt-get install mingw-w64
+
+cmake -B build-windows -DCMAKE_TOOLCHAIN_FILE=windows-toolchain.cmake
+
+cmake --build build-windows
+
+
+
 How to setup
 -------------
 - Build the dotnethost.dll and iolite_api.dll using CMAKE.

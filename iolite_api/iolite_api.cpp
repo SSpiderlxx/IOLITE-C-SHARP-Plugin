@@ -41,6 +41,8 @@ static const io_component_custom_data_i* io_component_custom_data = nullptr;
 static const io_component_character_controller_i* io_component_character_controller = nullptr;
 // Delcare io_component_flipbook_animation interface
 static const io_component_flipbook_animation_i* io_component_flipbook_animation = nullptr;
+// Delcare io_component_camera_controller interface
+static const io_component_camera_controller_i* io_component_camera_controller = nullptr;
 
 IO_API_EXPORT io_uint32_t IO_API_CALL get_api_version()
 {
@@ -85,6 +87,8 @@ IO_API_EXPORT io_int32_t IO_API_CALL load_plugin(const void* api_manager)
     io_component_character_controller = (const io_component_character_controller_i*)io_api_manager->find_first(IO_COMPONENT_CHARACTER_CONTROLLER_API_NAME);
 	// Retrieve the flipbook animation interface
 	io_component_flipbook_animation = (const io_component_flipbook_animation_i*)io_api_manager->find_first(IO_COMPONENT_FLIPBOOK_ANIMATION_API_NAME);
+    // Retrieve the camera controller interface
+    io_component_camera_controller = (const io_component_camera_controller_i*)io_api_manager->find_first(IO_COMPONENT_CAMERA_CONTROLLER_API_NAME);
 
     return 0;
 }
@@ -1089,3 +1093,21 @@ IO_API_EXPORT void play_flipbook(io_ref_t flipbook) {
 IO_API_EXPORT void stop_flipbook(io_ref_t flipbook) {
 	io_component_flipbook_animation->stop(flipbook);
 }
+
+// Provides access to the camera controller system
+IO_API_EXPORT io_ref_t camera_controller_for_entity(io_ref_t entity) {
+    return io_component_camera_controller->base.get_component_for_entity(entity);
+}
+
+IO_API_EXPORT void set_target_node(io_ref_t controller, io_ref_t node) {
+    io_component_camera_controller->set_target_node(controller, node);
+}
+
+IO_API_EXPORT void set_target_euler_angles(io_ref_t controller, io_vec3_t euler_angles) {
+    io_component_camera_controller->set_target_euler_angles(controller, euler_angles);
+}
+
+IO_API_EXPORT io_vec3_t get_target_euler_angles(io_ref_t controller) {
+    return io_component_camera_controller->get_target_euler_angles(controller);
+}
+

@@ -1140,6 +1140,22 @@ namespace IOLITE_Library
         public static extern void stop_flipbook(io_ref_t node);
     }
 
+    // Provides access to the camera controller
+    public static class CameraController
+    {
+        [DllImport("iolite_api.dll")]
+        public static extern io_ref_t camera_controller_for_entity(io_ref_t entity);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void set_target_node(io_ref_t controller, io_ref_t node);
+
+        [DllImport("iolite_api.dll")]
+        public static extern void set_target_euler_angles(io_ref_t controller, io_vec3_t euler_angles);
+
+        [DllImport("iolite_api.dll")]
+        public static extern io_vec3_t get_target_euler_angles(io_ref_t controller);
+    }
+
     // Main class using the organized API functions
     public class Class1
     {
